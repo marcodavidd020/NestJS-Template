@@ -20,6 +20,15 @@ import { AddressSerializer } from './serializers/address.serializer';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import {
+  createSuccessResponse,
+  createCreatedResponse,
+} from '../../common/helpers/responses/success.helper';
+import {
+  createNotFoundResponse,
+  createErrorResponse,
+} from '../../common/helpers/responses/error.helper';
+import { ISuccessResponse } from '../../common/interfaces/response.interface';
 
 @ApiTags('Direcciones')
 @Controller('addresses')
@@ -33,7 +42,7 @@ export class AddressesController {
   @Get()
   async findAll(
     @Query('userId') userId?: string,
-  ): Promise<AddressSerializer[]> {
+  ): Promise<ISuccessResponse<AddressSerializer[]>> {
     let addresses: AddressSerializer[];
 
     if (userId) {
@@ -42,16 +51,25 @@ export class AddressesController {
       addresses = await this.addressesService.findAll();
     }
 
-    return addresses.map((address) => new AddressSerializer(address));
+    return createCreatedResponse(
+      addresses.map((address) => new AddressSerializer(address)),
+      'Direcciones recuperadas exitosamente',
+    );
   }
 
   @ApiOperation({ summary: 'Obtener dirección por ID' })
   @ApiResponse({ status: 200, description: 'Dirección encontrada', type: AddressSerializer })
   @ApiResponse({ status: 404, description: 'Dirección no encontrada' })
   @Get(':id')
-  async findById(@Param('id') id: string): Promise<AddressSerializer> {
+  async findById(@Param('id') id: string): Promise<ISuccessResponse<AddressSerializer>> {
     const address = await this.addressesService.findById(id);
-    return new AddressSerializer(address);
+    if (!address) {
+      throw new NotFoundException(createNotFoundResponse('Dirección'));
+    }
+    return createSuccessResponse(
+      new AddressSerializer(address),
+      'Dirección encontrada exitosamente',
+    );
   }
 
   @ApiOperation({ summary: 'Crear nueva dirección' })
@@ -60,9 +78,12 @@ export class AddressesController {
   @Post()
   async create(
     @Body() addressData: CreateAddressDto,
-  ): Promise<AddressSerializer> {
+  ): Promise<ISuccessResponse<AddressSerializer>> {
     const address = await this.addressesService.create(addressData);
-    return new AddressSerializer(address);
+    return createSuccessResponse(
+      new AddressSerializer(address),
+      'Dirección creada exitosamente',
+    );
   }
 
   @ApiOperation({ summary: 'Actualizar dirección' })
@@ -72,12 +93,15 @@ export class AddressesController {
   async update(
     @Param('id') id: string,
     @Body() addressData: UpdateAddressDto,
-  ): Promise<AddressSerializer> {
+  ): Promise<ISuccessResponse<AddressSerializer>> {
     const address = await this.addressesService.update(id, addressData);
     if (!address) {
-      throw new NotFoundException(`Dirección con ID ${id} no encontrada`);
+      throw new NotFoundException(createNotFoundResponse('Dirección'));
     }
-    return new AddressSerializer(address);
+    return createSuccessResponse(
+      new AddressSerializer(address),
+      'Dirección actualizada exitosamente',
+    );
   }
 
   @ApiOperation({ summary: 'Eliminar dirección' })
@@ -85,8 +109,12 @@ export class AddressesController {
   @ApiResponse({ status: 404, description: 'Dirección no encontrada' })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(@Param('id') id: string): Promise<void> {
+  async delete(@Param('id') id: string): Promise<ISuccessResponse<null>> {
     await this.addressesService.delete(id);
+    return createSuccessResponse(
+      null,
+      'Dirección eliminada exitosamente',
+    );
   }
 
   @ApiOperation({ summary: 'Establecer dirección como predeterminada' })
@@ -98,8 +126,11 @@ export class AddressesController {
   async setAsDefault(
     @Param('id') id: string,
     @Body('userId') userId: string,
-  ): Promise<AddressSerializer> {
+  ): Promise<ISuccessResponse<AddressSerializer>> {
     const address = await this.addressesService.setAsDefault(id, userId);
-    return new AddressSerializer(address);
+    return createSuccessResponse(
+      new AddressSerializer(address),
+      'Dirección establecida como predeterminada exitosamente',
+    );
   }
 }

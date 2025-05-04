@@ -63,7 +63,7 @@ export class UsersRepository extends ModelRepository<User, UserSerializer> {
         .where('user.email = :email', { email });
 
       // Logging para depuración
-      console.log('SQL Query:', query.getSql());
+    //   console.log('SQL Query:', query.getSql());
 
       const user = await query.getOne();
 

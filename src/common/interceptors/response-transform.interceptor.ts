@@ -37,6 +37,18 @@ export class ResponseTransformInterceptor implements NestInterceptor {
           return data;
         }
 
+        // Si el objeto ya tiene la estructura esperada (viene de createSuccessResponse helper)
+        if (
+          data && 
+          typeof data === 'object' && 
+          'success' in data && 
+          'message' in data && 
+          'data' in data &&
+          'timestamp' in data
+        ) {
+          return data;
+        }
+
         // Envolver la respuesta en SuccessSerializer
         return new SuccessSerializer({
           message: 'Operación completada con éxito',
@@ -54,6 +66,20 @@ export class ResponseTransformInterceptor implements NestInterceptor {
           return throwError(() => error);
         }
 
+        // Si el error ya tiene la estructura esperada (viene de createErrorResponse helper)
+        const response = error.getResponse ? error.getResponse() : null;
+        if (
+          response && 
+          typeof response === 'object' && 
+          'success' in response && 
+          response.success === false &&
+          'message' in response && 
+          'statusCode' in response &&
+          'timestamp' in response
+        ) {
+          return throwError(() => error);
+        }
+
         // Determinar código y mensaje de error
         let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
         let message = 'Error interno del servidor';
@@ -61,7 +87,6 @@ export class ResponseTransformInterceptor implements NestInterceptor {
 
         if (error instanceof HttpException) {
           statusCode = error.getStatus();
-          const response = error.getResponse();
 
           // Manejar diferentes tipos de respuestas de error
           if (typeof response === 'object') {

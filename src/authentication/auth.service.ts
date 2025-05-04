@@ -44,7 +44,9 @@ export class AuthService {
     }
 
     // Si el formato no es reconocido, devolver valor por defecto (1 hora)
-    this.logger.warn(`Formato de expiración no reconocido: ${expTime}, usando valor por defecto (1h)`);
+    this.logger.warn(
+      `Formato de expiración no reconocido: ${expTime}, usando valor por defecto (1h)`,
+    );
     return 3600;
   }
 
@@ -53,17 +55,15 @@ export class AuthService {
    */
   async validateUser(credentials: ILoginCredentials): Promise<UserSerializer> {
     const { email, password } = credentials;
-    
-    this.logger.debug(
-      `Intentando validar usuario: ${email}`,
-    );
-    
+
+    this.logger.debug(`Intentando validar usuario: ${email}`);
+
     // UsersService ya tiene un método que valida la contraseña
     const user = await this.usersService.validatePassword(email, password);
-    
+
     if (!user) {
       this.logger.debug(`Credenciales inválidas para: ${email}`);
-      
+
       // Proporcionar información detallada del error
       throw new UnauthorizedException({
         message: 'Credenciales inválidas',
@@ -71,28 +71,30 @@ export class AuthService {
           {
             field: 'general',
             errors: ['El email o la contraseña son incorrectos'],
-            value: null
-          }
-        ]
+            value: null,
+          },
+        ],
       });
     }
-    
+
     if (!user.isActive) {
       this.logger.debug(`Usuario inactivo: ${email}`);
-      
+
       // Proporcionar información detallada del error
       throw new UnauthorizedException({
         message: 'Usuario inactivo',
         errors: [
           {
             field: 'general',
-            errors: ['Tu cuenta está desactivada. Contacta con soporte para reactivarla.'],
-            value: null
-          }
-        ]
+            errors: [
+              'Tu cuenta está desactivada. Contacta con soporte para reactivarla.',
+            ],
+            value: null,
+          },
+        ],
       });
     }
-    
+
     this.logger.debug(`Usuario validado correctamente: ${email}`);
     return user;
   }

@@ -6,6 +6,9 @@ import {
   ClassSerializerInterceptor,
   Get,
   UseGuards,
+  HttpCode,
+  HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -15,6 +18,8 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { UserSerializer } from '../models/users/serializers/user.serializer';
 import { LoggedInUser } from '../common/decorators/requests/logged-in-user.decorator';
 import { IJwtUser } from './interfaces/jwt-user.interface';
+import { createSuccessResponse } from '../common/helpers/responses/success.helper';
+import { createUnauthorizedResponse } from '../common/helpers/responses/error.helper';
 
 @ApiTags('Autenticación')
 @Controller('auth')
@@ -26,9 +31,17 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'Login exitoso', type: TokenSerializer })
   @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
   @Post('login')
-  async login(@Body() loginDto: LoginDto): Promise<TokenSerializer> {
-    const user = await this.authService.validateUser(loginDto);
-    return this.authService.login(user);
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() loginDto: LoginDto): Promise<any> {
+    try {
+      const user = await this.authService.validateUser(loginDto);
+      const token = await this.authService.login(user);
+      return createSuccessResponse(token, 'Inicio de sesión exitoso');
+    } catch (error) {
+      throw new UnauthorizedException(
+        createUnauthorizedResponse('Credenciales incorrectas. Por favor, verifique su email y contraseña.')
+      );
+    }
   }
 
   @ApiOperation({ summary: 'Obtener perfil de usuario', description: 'Obtiene el perfil del usuario autenticado' })
@@ -37,8 +50,13 @@ export class AuthController {
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  async getProfile(@LoggedInUser() user: IJwtUser): Promise<UserSerializer> {
-    return this.authService.getProfile(user.id);
+  async getProfile(@LoggedInUser() user: IJwtUser): Promise<any> {
+    // Obtenemos los datos del usuario a partir del ID en el token JWT
+    const profile = await this.authService.getProfile(user.id);
+    return createSuccessResponse(
+      new UserSerializer(profile),
+      'Perfil recuperado exitosamente'
+    );
   }
 
   @ApiOperation({ summary: 'Renovar token', description: 'Renovar el token JWT actual' })
@@ -47,8 +65,10 @@ export class AuthController {
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @Get('refresh-token')
-  async refreshToken(@LoggedInUser() user: IJwtUser): Promise<TokenSerializer> {
+  async refreshToken(@LoggedInUser() user: IJwtUser): Promise<any> {
+    // Obtener los datos completos del usuario para incluirlos en el token
     const userProfile = await this.authService.getProfile(user.id);
-    return this.authService.login(userProfile);
+    const token = await this.authService.login(userProfile);
+    return createSuccessResponse(token, 'Token renovado exitosamente');
   }
 }

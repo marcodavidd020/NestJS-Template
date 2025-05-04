@@ -1,6 +1,6 @@
 # Componentes Comunes (Common)
 
-El módulo `common` proporciona componentes reutilizables que siguen el principio DRY (Don't Repeat Yourself) y permiten mantener consistencia en toda la aplicación.
+El módulo `common` proporciona componentes reutilizables que siguen el principio DRY (Don't Repeat Yourself) y permiten mantener consistencia en toda la aplicación. La estructura está inspirada en el artículo [Best Way to Structure Your Directory/Code (NestJS)](https://medium.com/the-crowdlinker-chronicle/best-way-to-structure-your-directory-code-nestjs-a06c7a641401).
 
 ## Arquitectura
 
@@ -12,6 +12,7 @@ El módulo implementa una arquitectura de capas con los siguientes componentes:
 - **Pipes**: Validan y transforman datos
 - **Helpers**: Funciones utilitarias para tareas comunes
 - **Serializadores**: Transforman entidades en respuestas API
+- **Middleware**: Procesan solicitudes antes de llegar a los controladores
 
 ## Estructura de Directorios
 
@@ -33,6 +34,8 @@ common/
 │   ├── jwt-auth.guard.ts
 │   └── user-types.guard.ts
 ├── helpers/                   # Funciones auxiliares
+│   ├── exceptions/           # Formateo de excepciones
+│   │   └── validation.helper.ts
 │   ├── responses/            # Formateo de respuestas
 │   │   ├── error.helper.ts
 │   │   └── success.helper.ts
@@ -42,6 +45,9 @@ common/
 │   └── search.interface.ts   # Para resultados paginados
 ├── interceptors/              # Interceptores
 │   └── http-cache.interceptor.ts
+├── middleware/                # Middleware
+│   └── models/               # Específico para modelos
+│       └── user.middleware.ts
 ├── pipes/                     # Pipes de validación
 │   └── validation.pipe.ts
 └── serializers/               # Transformadores de respuesta
@@ -73,6 +79,11 @@ common/
 
 ### Helpers de Respuesta
 
+Los helpers son funciones de utilidad que pueden ser utilizadas en cualquier parte de la aplicación. No tienen una relación directa con los pipes, ya que cumplen propósitos diferentes:
+
+- **Helpers**: Proporcionan funciones auxiliares para tareas comunes, como formateo de respuestas o manipulación de strings.
+- **Pipes**: Se enfocan en la validación y transformación de datos durante el ciclo de vida de las peticiones.
+
 | Función | Descripción | Parámetros |
 |---------|-------------|------------|
 | `createSuccessResponse()` | Crea respuesta de éxito | `data: any, message?: string` |
@@ -83,6 +94,15 @@ common/
 | `createNotFoundResponse()` | Error 404 | `entityName?: string` |
 | `createUnauthorizedResponse()` | Error 401 | `message?: string` |
 | `createForbiddenResponse()` | Error 403 | `message?: string` |
+
+#### Dónde utilizar los Helpers
+
+Los helpers se utilizan principalmente en:
+
+1. **Controladores**: Para formatear respuestas HTTP de forma consistente
+2. **Servicios**: Para generar mensajes de error estandarizados
+3. **Excepciones personalizadas**: Para mantener un formato de error consistente
+4. **Interceptores**: Para transformar respuestas antes de enviarlas al cliente
 
 ### Helpers de String
 
@@ -104,9 +124,22 @@ common/
 
 ### Pipes
 
+Los pipes se utilizan para transformar y validar datos entrantes. El `ValidationPipe` personalizado extiende la funcionalidad del pipe estándar de NestJS para proporcionar mensajes de error más detallados.
+
 | Pipe | Descripción | Uso |
 |------|-------------|-----|
-| `ValidationPipe` | Validación avanzada de datos | Global o `@UsePipes(ValidationPipe)` |
+| `ValidationPipe` | Validación avanzada de datos con errores formateados según el estándar de la aplicación | Global o `@UsePipes(ValidationPipe)` |
+
+### Middleware
+
+El middleware procesa las solicitudes antes de que lleguen a los controladores. Algunos ejemplos de middleware que podrían implementarse en esta estructura son:
+
+| Middleware | Descripción | Uso |
+|------------|-------------|-----|
+| `UserMiddleware` | Carga datos del usuario actual en la solicitud | Rutas que requieren contexto de usuario |
+| `LoggingMiddleware` | Registra información sobre solicitudes HTTP | Global o para rutas específicas |
+| `RateLimitMiddleware` | Limita el número de solicitudes por IP | Rutas públicas susceptibles a abusos |
+| `CorrelationIdMiddleware` | Añade un ID de correlación para seguimiento | Global para todas las rutas |
 
 ## Constantes Importantes
 

@@ -1,3 +1,5 @@
+import { ISuccessResponse } from '../../interfaces/response.interface';
+
 /**
  * Helper para formatear respuestas exitosas
  */
@@ -8,7 +10,7 @@
 export function createSuccessResponse<T>(
   data: T,
   message: string = 'Operación exitosa',
-) {
+): ISuccessResponse<T> {
   return {
     success: true,
     message,
@@ -23,7 +25,7 @@ export function createSuccessResponse<T>(
 export function createCreatedResponse<T>(
   data: T,
   entityName: string = 'Recurso',
-) {
+): ISuccessResponse<T> {
   return createSuccessResponse(data, `${entityName} creado correctamente`);
 }
 
@@ -33,13 +35,13 @@ export function createCreatedResponse<T>(
 export function createUpdatedResponse<T>(
   data: T,
   entityName: string = 'Recurso',
-) {
+): ISuccessResponse<T> {
   return createSuccessResponse(data, `${entityName} actualizado correctamente`);
 }
 
 /**
  * Crea una respuesta para operaciones de eliminación
  */
-export function createDeletedResponse(entityName: string = 'Recurso') {
+export function createDeletedResponse(entityName: string = 'Recurso'): ISuccessResponse<null> {
   return createSuccessResponse(null, `${entityName} eliminado correctamente`);
 }
