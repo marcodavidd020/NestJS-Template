@@ -99,7 +99,8 @@ common/
 
 | Interceptor | Descripción | Uso |
 |-------------|-------------|-----|
-| `HttpCacheInterceptor` | Caché para respuestas GET | `@UseInterceptors(HttpCacheInterceptor)` |
+| `HttpCacheInterceptor` | Caché inteligente para respuestas GET. Mejora el rendimiento almacenando respuestas en Redis. Solo cachea peticiones sin autenticación y rutas marcadas explícitamente. [Documentación detallada](./http-cache-interceptor.md) | `@UseInterceptors(HttpCacheInterceptor)` |
+| `ResponseTransformInterceptor` | Transforma todas las respuestas a un formato estándar usando SuccessSerializer y ErrorSerializer | `@UseInterceptors(ResponseTransformInterceptor)` |
 
 ### Pipes
 
