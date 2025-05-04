@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PostgresConfigModule } from './postgres/config.module';
-import { PostgresConfigService } from './postgres/config.service';
+import { PostgresConfigModule } from '../../../config/database/postgres/config.module';
+import { PostgresConfigService } from '../../../config/database/postgres/config.service';
 
 @Module({
   imports: [
@@ -11,8 +11,7 @@ import { PostgresConfigService } from './postgres/config.service';
       useFactory: (postgresConfigService: PostgresConfigService) =>
         postgresConfigService.getTypeOrmConfig(),
     }),
-    PostgresConfigModule,
   ],
-  exports: [TypeOrmModule, PostgresConfigModule],
+  exports: [TypeOrmModule],
 })
-export class DatabaseModule {}
+export class PostgresProviderModule {}
