@@ -1,6 +1,6 @@
 # Componentes Comunes (Common)
 
-El módulo `common` proporciona componentes reutilizables que siguen el principio DRY (Don't Repeat Yourself) y permiten mantener consistencia en toda la aplicación. La estructura está inspirada en el artículo [Best Way to Structure Your Directory/Code (NestJS)](https://medium.com/the-crowdlinker-chronicle/best-way-to-structure-your-directory-code-nestjs-a06c7a641401).
+El módulo `common` proporciona componentes reutilizables que siguen el principio DRY (Don't Repeat Yourself) y permiten mantener consistencia en toda la aplicación.
 
 ## Arquitectura
 

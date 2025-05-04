@@ -8,6 +8,8 @@
 
 Estructura base profesional para proyectos NestJS con arquitectura modular, siguiendo las mejores prácticas para aplicaciones empresariales escalables y mantenibles.
 
+La estructura está inspirada en el artículo [Best Way to Structure Your Directory/Code (NestJS)](https://medium.com/the-crowdlinker-chronicle/best-way-to-structure-your-directory-code-nestjs-a06c7a641401).
+
 <p align="center">
   <img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" />
 </p>
