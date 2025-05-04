@@ -7,6 +7,7 @@ import {
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { ValidationErrorSerializer } from '../serializers/validation/validation-error.serializer';
+import { FieldError } from '../serializers/responses/error.serializer';
 
 /**
  * Pipe para validación personalizada
@@ -31,7 +32,7 @@ export class ValidationPipe implements PipeTransform<any> {
     // Si hay errores, lanzar excepción con formato personalizado
     if (errors.length > 0) {
       // Formatear errores para mejor legibilidad
-      const formattedErrors = errors.map((err) => {
+      const formattedErrors: FieldError[] = errors.map((err) => {
         const constraints = err.constraints
           ? Object.values(err.constraints)
           : ['Error de validación'];

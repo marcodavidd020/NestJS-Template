@@ -42,7 +42,17 @@ export class UsersService {
     // Verificar si el email ya existe
     const existingUser = await this.usersRepository.findByEmail(userData.email);
     if (existingUser) {
-      throw new ConflictException(`Email ${userData.email} is already in use`);
+      // Proporcionar información detallada del error
+      throw new ConflictException({
+        message: `Email ${userData.email} is already in use`,
+        errors: [
+          {
+            field: 'email',
+            errors: [`El email ${userData.email} ya está en uso`],
+            value: userData.email
+          }
+        ]
+      });
     }
 
     // Encriptar contraseña
@@ -92,6 +102,8 @@ export class UsersService {
       
       if (!userEntity) {
         this.logger.debug(`No se encontró usuario con email: ${email}`);
+        // Retornar null en lugar de lanzar una excepción para permitir que AuthService
+        // maneje el error con su propio formato
         return null;
       }
       

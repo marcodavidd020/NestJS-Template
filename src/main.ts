@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AppConfigService } from './config/app/config.service';
+import { ValidationPipe as CustomValidationPipe } from './common/pipes/validation.pipe';
+import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,14 +15,11 @@ async function bootstrap() {
   
   app.setGlobalPrefix(globalPrefix);
   
-  // Configuración global de pipes de validación
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true, // Elimina propiedades no definidas en los DTOs
-      forbidNonWhitelisted: true, // Lanza error si hay propiedades no definidas
-      transform: true, // Transforma los datos a los tipos definidos
-    }),
-  );
+  // Usar nuestro ValidationPipe personalizado en lugar del estándar
+  app.useGlobalPipes(new CustomValidationPipe());
+  
+  // Registrar el interceptor de transformación de respuestas
+  app.useGlobalInterceptors(new ResponseTransformInterceptor());
 
   // Configuración de Swagger
   const config = new DocumentBuilder()

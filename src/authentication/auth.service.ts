@@ -53,22 +53,46 @@ export class AuthService {
    */
   async validateUser(credentials: ILoginCredentials): Promise<UserSerializer> {
     const { email, password } = credentials;
-
-    this.logger.debug(`Intentando validar usuario: ${email}`);
-
+    
+    this.logger.debug(
+      `Intentando validar usuario: ${email}`,
+    );
+    
     // UsersService ya tiene un método que valida la contraseña
     const user = await this.usersService.validatePassword(email, password);
-
+    
     if (!user) {
       this.logger.debug(`Credenciales inválidas para: ${email}`);
-      throw new UnauthorizedException('Credenciales inválidas');
+      
+      // Proporcionar información detallada del error
+      throw new UnauthorizedException({
+        message: 'Credenciales inválidas',
+        errors: [
+          {
+            field: 'general',
+            errors: ['El email o la contraseña son incorrectos'],
+            value: null
+          }
+        ]
+      });
     }
-
+    
     if (!user.isActive) {
       this.logger.debug(`Usuario inactivo: ${email}`);
-      throw new UnauthorizedException('Usuario inactivo');
+      
+      // Proporcionar información detallada del error
+      throw new UnauthorizedException({
+        message: 'Usuario inactivo',
+        errors: [
+          {
+            field: 'general',
+            errors: ['Tu cuenta está desactivada. Contacta con soporte para reactivarla.'],
+            value: null
+          }
+        ]
+      });
     }
-
+    
     this.logger.debug(`Usuario validado correctamente: ${email}`);
     return user;
   }
