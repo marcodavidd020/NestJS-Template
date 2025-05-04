@@ -43,29 +43,23 @@ export class UsersRepository extends ModelRepository<User, UserSerializer> {
    */
   async findUserWithPassword(email: string): Promise<User | null> {
     try {
-      // Accedemos directamente al repository para evitar transformaciones
-      const userRepo = this.repository;
-
-      // Usamos una consulta SQL directa para asegurarnos de recuperar el password correctamente
-      const query = userRepo
-        .createQueryBuilder('user')
-        .select([
-          'user.id',
-          'user.email',
-          'user.firstName',
-          'user.lastName',
-          'user.isActive',
-          'user.avatar',
-          'user.roles',
-          'user.phoneNumber',
-          'user.password', // Incluye explícitamente el password
-        ])
-        .where('user.email = :email', { email });
-
-      // Logging para depuración
-    //   console.log('SQL Query:', query.getSql());
-
-      const user = await query.getOne();
+      // Usando findOneBy con select explícito para incluir todos los campos necesarios
+      const user = await this.repository.findOne({
+        where: { email },
+        select: [
+          'id',
+          'email',
+          'firstName',
+          'lastName',
+          'isActive',
+          'avatar',
+          'roles',
+          'phoneNumber',
+          'password', // Incluye explícitamente el password
+          'createdAt',
+          'updatedAt',
+        ],
+      });
 
       if (user) {
         console.log('Usuario encontrado, password presente:', !!user.password);
