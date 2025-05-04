@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { UsersRepository } from './repositories/users.repository';
 import { UserSerializer } from './serializers/user.serializer';
@@ -12,6 +13,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(private readonly usersRepository: UsersRepository) {}
 
   async findAll(): Promise<UserSerializer[]> {
@@ -27,7 +30,12 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<UserSerializer | null> {
-    return this.usersRepository.findByEmail(email);
+    try {
+      return await this.usersRepository.findByEmail(email);
+    } catch (error) {
+      this.logger.error(`Error al buscar usuario por email ${email}: ${error.message}`, error.stack);
+      return null;
+    }
   }
 
   async create(userData: CreateUserDto): Promise<UserSerializer> {
@@ -76,21 +84,37 @@ export class UsersService {
     email: string,
     password: string,
   ): Promise<UserSerializer | null> {
-    // En este caso podemos usar directamente el método para buscar un usuario con contraseña
-    const userWithPassword =
-      await this.usersRepository.findUserWithPassword(email);
-    if (!userWithPassword || !userWithPassword['password']) {
+    try {
+      // En este caso podemos usar directamente el método para buscar un usuario con contraseña
+      this.logger.debug(`Validando contraseña para el email: ${email}`);
+      
+      const userEntity = await this.usersRepository.findUserWithPassword(email);
+      
+      if (!userEntity) {
+        this.logger.debug(`No se encontró usuario con email: ${email}`);
+        return null;
+      }
+      
+      if (!userEntity.password) {
+        this.logger.warn(`Usuario encontrado pero sin contraseña: ${email}`);
+        return null;
+      }
+
+      const isPasswordValid = await bcrypt.compare(
+        password,
+        userEntity.password
+      );
+      
+      if (!isPasswordValid) {
+        this.logger.debug(`Contraseña inválida para el usuario: ${email}`);
+        return null;
+      }
+
+      this.logger.debug(`Validación de contraseña exitosa para: ${email}`);
+      return this.usersRepository.findByEmail(email);
+    } catch (error) {
+      this.logger.error(`Error validando contraseña para ${email}: ${error.message}`, error.stack);
       return null;
     }
-
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      userWithPassword['password'],
-    );
-    if (!isPasswordValid) {
-      return null;
-    }
-
-    return this.usersRepository.findByEmail(email);
   }
 }

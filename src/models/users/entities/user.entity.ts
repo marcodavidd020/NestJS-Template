@@ -22,7 +22,7 @@ export class User {
   @Column({ length: 100 })
   lastName: string;
 
-  @Column({ select: false })
+  @Column()
   password: string;
 
   @Column({ default: true })
@@ -31,7 +31,7 @@ export class User {
   @Column({ nullable: true })
   avatar: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column('simple-array', { nullable: true })
   roles: string[];
 
   @Column({ length: 20, nullable: true })

@@ -5,7 +5,7 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
 } from 'class-validator';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { UsersService } from '../../../models/users/users.service';
 
 /**
@@ -14,7 +14,12 @@ import { UsersService } from '../../../models/users/users.service';
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class UserExistsConstraint implements ValidatorConstraintInterface {
-  constructor(private usersService: UsersService) {}
+  private readonly logger = new Logger(UserExistsConstraint.name);
+
+  constructor(
+    @Inject(forwardRef(() => UsersService))
+    private usersService: UsersService
+  ) {}
 
   async validate(userId: string, args: ValidationArguments) {
     if (!userId) return false;
@@ -23,6 +28,7 @@ export class UserExistsConstraint implements ValidatorConstraintInterface {
       const user = await this.usersService.findById(userId);
       return !!user;
     } catch (e) {
+      this.logger.error(`Error validando existencia de usuario: ${e.message}`, e.stack);
       return false;
     }
   }

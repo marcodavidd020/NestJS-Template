@@ -10,7 +10,7 @@ import { ValidationErrorSerializer } from '../serializers/validation/validation-
 
 /**
  * Pipe para validación personalizada
- * 
+ *
  * Extiende la funcionalidad del ValidationPipe estándar de NestJS
  * para proporcionar mensajes de error más detallados y consistentes
  */
@@ -24,34 +24,34 @@ export class ValidationPipe implements PipeTransform<any> {
 
     // Transformar valor plano a instancia de clase
     const object = plainToClass(metadata.metatype, value);
-    
+
     // Validar el objeto
     const errors = await validate(object);
-    
+
     // Si hay errores, lanzar excepción con formato personalizado
     if (errors.length > 0) {
       // Formatear errores para mejor legibilidad
-      const formattedErrors = errors.map(err => {
-        const constraints = err.constraints 
-          ? Object.values(err.constraints) 
+      const formattedErrors = errors.map((err) => {
+        const constraints = err.constraints
+          ? Object.values(err.constraints)
           : ['Error de validación'];
-        
+
         return {
           field: err.property,
           errors: constraints,
           value: err.value,
         };
       });
-      
+
       // Lanzar excepción con formato personalizado
       throw new BadRequestException(
         new ValidationErrorSerializer({
           message: 'Error de validación en los datos proporcionados',
           errors: formattedErrors,
-        })
+        }),
       );
     }
-    
+
     return object;
   }
 
@@ -60,4 +60,4 @@ export class ValidationPipe implements PipeTransform<any> {
     const types = [String, Boolean, Number, Array, Object];
     return !types.includes(metatype);
   }
-} 
+}

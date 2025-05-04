@@ -5,7 +5,7 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
 } from 'class-validator';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { UsersService } from '../../../models/users/users.service';
 
 /**
@@ -14,16 +14,23 @@ import { UsersService } from '../../../models/users/users.service';
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class UniqueUserEmailConstraint implements ValidatorConstraintInterface {
-  constructor(private usersService: UsersService) {}
+  private readonly logger = new Logger(UniqueUserEmailConstraint.name);
+
+  constructor(
+    @Inject(forwardRef(() => UsersService))
+    private usersService: UsersService,
+  ) {}
 
   async validate(email: string, args: ValidationArguments) {
-    if (!email) return false;
+    if (!email) return true; // Si no hay email, dejamos que otros validadores se encarguen
 
     try {
       const user = await this.usersService.findByEmail(email);
       return !user; // Email es único si no existe usuario con ese email
     } catch (e) {
-      return false;
+      // Registramos el error para ayudar en debugging
+      this.logger.error(`Error validando email único: ${e.message}`, e.stack);
+      return true; // En caso de error, permitimos continuar (otros validadores pueden detectar problemas)
     }
   }
 

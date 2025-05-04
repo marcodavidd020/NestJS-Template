@@ -38,15 +38,47 @@ export class UsersRepository extends ModelRepository<User, UserSerializer> {
 
   /**
    * Buscar usuario con contraseña (para login)
+   * TypeORM oculta el campo password por default,
+   * necesitamos usar un approach diferente para obtenerlo
    */
-  async findUserWithPassword(email: string): Promise<UserSerializer | null> {
-    const user = await this.repository
-      .createQueryBuilder('user')
-      .where('user.email = :email', { email })
-      .addSelect('user.password')
-      .getOne();
+  async findUserWithPassword(email: string): Promise<User | null> {
+    try {
+      // Accedemos directamente al repository para evitar transformaciones
+      const userRepo = this.repository;
 
-    return user ? this.transform(user) : null;
+      // Usamos una consulta SQL directa para asegurarnos de recuperar el password correctamente
+      const query = userRepo
+        .createQueryBuilder('user')
+        .select([
+          'user.id',
+          'user.email',
+          'user.firstName',
+          'user.lastName',
+          'user.isActive',
+          'user.avatar',
+          'user.roles',
+          'user.phoneNumber',
+          'user.password', // Incluye explícitamente el password
+        ])
+        .where('user.email = :email', { email });
+
+      // Logging para depuración
+      console.log('SQL Query:', query.getSql());
+
+      const user = await query.getOne();
+
+      if (user) {
+        console.log('Usuario encontrado, password presente:', !!user.password);
+      }
+
+      return user;
+    } catch (error) {
+      console.error(
+        `Error al buscar usuario con contraseña: ${error.message}`,
+        error.stack,
+      );
+      return null;
+    }
   }
 
   /**
