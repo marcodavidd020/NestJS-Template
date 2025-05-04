@@ -11,10 +11,12 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  NotFoundException,
 } from '@nestjs/common';
 import { AddressesService } from './addresses.service';
 import { AddressSerializer } from './serializers/address.serializer';
-import { IAddressCreate, IAddressUpdate } from './interfaces/address.interface';
+import { CreateAddressDto } from './dto/create-address.dto';
+import { UpdateAddressDto } from './dto/update-address.dto';
 
 @Controller('addresses')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -44,7 +46,7 @@ export class AddressesController {
 
   @Post()
   async create(
-    @Body() addressData: IAddressCreate,
+    @Body() addressData: CreateAddressDto,
   ): Promise<AddressSerializer> {
     const address = await this.addressesService.create(addressData);
     return new AddressSerializer(address);
@@ -53,9 +55,12 @@ export class AddressesController {
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() addressData: IAddressUpdate,
+    @Body() addressData: UpdateAddressDto,
   ): Promise<AddressSerializer> {
     const address = await this.addressesService.update(id, addressData);
+    if (!address) {
+      throw new NotFoundException(`Dirección con ID ${id} no encontrada`);
+    }
     return new AddressSerializer(address);
   }
 

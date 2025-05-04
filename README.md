@@ -1,145 +1,207 @@
-# Estructura Base NestJS
+# 🚀 NestJS - Estructura Base Profesional
 
-Esta estructura base para proyectos NestJS implementa una arquitectura modular con separación clara de responsabilidades.
+[![NestJS](https://img.shields.io/badge/NestJS-8.x-E0234E.svg?style=flat-square&logo=nestjs)](https://nestjs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-4.x-3178C6.svg?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![TypeORM](https://img.shields.io/badge/TypeORM-0.3.x-FE0902.svg?style=flat-square)](https://typeorm.io/)
+[![JWT](https://img.shields.io/badge/JWT-Auth-000000.svg?style=flat-square&logo=json-web-tokens)](https://jwt.io/)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 
-## Características principales
-
-- **Configuración modular**: Estructura flexible para diferentes entornos
-- **Proveedores de servicios**: Conexiones a servicios externos (bases de datos, cache, cola, etc.)
-- **Repositorios con patrón base**: Implementación de CRUD reutilizable
-- **Migraciones y seeders**: Gestión de esquema y datos iniciales
-- **Serialización de respuestas**: Transformación de entidades a respuestas API
-
-## Documentación
-
-La documentación se encuentra en la carpeta `src/document/`:
-
-- [Estructura General del Proyecto](src/document/estructura-general.md) - Visión general de la organización
-- [Estructura de Base de Datos](src/document/database-estructura.md) - Capas de BD, migraciones y seeding
-- [Estructura de Modelos](src/document/estructura-modelos.md) - Entidades, repositorios y servicios
-- [Configuración del Sistema](src/document/configuracion-sistema.md) - Variables de entorno y configuración
-- [Estructura de Proveedores](src/document/providers-estructura.md) - Conexiones a servicios externos
-- [Generación de Migraciones](src/document/database-migraciones.md) - Generación automática de migraciones
-
-## Configuración
-
-El proyecto usa un sistema de configuración basado en archivos `.env`. Copie `.env.example` a `.env` y ajuste los valores:
-
-```bash
-cp .env.example .env
-```
-
-## Comandos disponibles
-
-```bash
-# Desarrollo
-npm run start:dev
-
-# Migraciones
-npm run migration:generate
-npm run migration:run
-npm run migration:revert
-
-# Seeders
-npm run seed
-```
+Estructura base profesional para proyectos NestJS con arquitectura modular, siguiendo las mejores prácticas para aplicaciones empresariales escalables y mantenibles.
 
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  <img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" />
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 📋 Características
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+- ✅ **Arquitectura hexagonal** con clara separación de responsabilidades
+- ✅ **Sistema de autenticación** completo con JWT
+- ✅ **Control de acceso** basado en roles (RBAC)
+- ✅ **Base de datos** con TypeORM configurado para múltiples proveedores
+- ✅ **Migraciones automáticas** para gestión de esquema de BD
+- ✅ **Seeders** para datos iniciales y pruebas
+- ✅ **Validación** avanzada con class-validator y DTOs
+- ✅ **Serialización** de respuestas con class-transformer
+- ✅ **Interceptores** para transformación y caché de respuestas
+- ✅ **Gestión de errores** centralizada y consistente
+- ✅ **Testing** unitario y de integración preconfigurado
+- ✅ **Documentación** detallada de cada módulo y componente
 
-## Description
+## 🔧 Requisitos previos
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Node.js** v14.x o superior
+- **npm** v6.x o superior (o **yarn**)
+- **Base de datos** (MySQL, PostgreSQL, SQLite, etc.)
+- **Git** para control de versiones
 
-## Project setup
-
-```bash
-$ npm install
-```
-
-## Compile and run the project
+## 🚀 Instalación
 
 ```bash
-# development
-$ npm run start
+# Clonar el repositorio
+git clone https://github.com/tu-usuario/nestjs-base-structure.git
+cd nestjs-base-structure
 
-# watch mode
-$ npm run start:dev
+# Instalar dependencias
+npm install
 
-# production mode
-$ npm run start:prod
+# Configurar variables de entorno
+cp .env.example .env
+# Edita .env con tus configuraciones
+
+# Ejecutar migraciones
+npm run migration:run
+
+# Poblar datos iniciales
+npm run seed:run
+
+# Iniciar en modo desarrollo
+npm run start:dev
 ```
 
-## Run tests
+## 🏗️ Estructura del proyecto
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```
+src/
+├── app.module.ts            # Módulo principal de la aplicación
+├── main.ts                  # Punto de entrada
+├── authentication/          # Sistema de autenticación completo
+│   ├── auth.controller.ts   # Endpoints de autenticación
+│   ├── auth.service.ts      # Servicios de autenticación
+│   ├── jwt.strategy.ts      # Estrategia de validación de tokens
+│   └── interfaces/          # Tipos e interfaces
+├── common/                  # Componentes compartidos reutilizables
+│   ├── constants/           # Constantes globales
+│   ├── decorators/          # Decoradores personalizados
+│   ├── exceptions/          # Manejo de excepciones
+│   ├── guards/              # Guards de seguridad
+│   ├── helpers/             # Funciones auxiliares
+│   ├── interceptors/        # Interceptores
+│   ├── pipes/               # Pipes de validación
+│   └── serializers/         # Transformadores de respuesta
+├── config/                  # Configuraciones por entorno
+│   ├── database/            # Configuración de bases de datos
+│   ├── app/                 # Configuración de la aplicación
+│   └── auth/                # Configuración de autenticación
+├── database/                # Gestión de base de datos
+│   ├── migrations/          # Migraciones de esquema
+│   ├── seeders/             # Seeders para datos iniciales
+│   └── factories/           # Factories para generación de datos
+├── models/                  # Modelos y dominio de la aplicación
+│   ├── common/              # Base común para modelos
+│   ├── users/               # Módulo de usuarios
+│   └── addresses/           # Módulo de direcciones
+├── providers/               # Proveedores de servicios externos
+│   ├── database/            # Proveedores de bases de datos
+│   └── cache/               # Proveedores de caché
+└── utils/                   # Utilidades y herramientas
 ```
 
-## Deployment
+## 📚 Documentación
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Documentación detallada disponible en `src/document/`:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+- [⚙️ Configuración del Sistema](src/document/configuracion-sistema.md)
+- [🏛️ Estructura General](src/document/estructura-general.md)
+- [🧩 Estructura de Modelos](src/document/estructura-modelos.md)
+- [🔌 Estructura de Proveedores](src/document/providers-estructura.md)
+- [🗃️ Estructura de Base de Datos](src/document/database-estructura.md)
+- [🔄 Migraciones](src/document/database-migraciones.md)
+- [🔐 Sistema de Autenticación](src/document/authentication.md)
+- [🧰 Componentes Comunes](src/document/common.md)
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+## 💻 Comandos principales
+
+| Comando | Descripción |
+|---------|-------------|
+| `npm run start:dev` | Inicia la aplicación en modo desarrollo con recarga automática |
+| `npm run build` | Compila la aplicación para producción |
+| `npm run start:prod` | Ejecuta la aplicación en modo producción |
+| `npm run lint` | Verifica la calidad del código |
+| `npm run test` | Ejecuta pruebas unitarias |
+| `npm run test:e2e` | Ejecuta pruebas de integración |
+| `npm run migration:generate` | Genera migraciones basadas en cambios de entidades |
+| `npm run migration:run` | Ejecuta migraciones pendientes |
+| `npm run migration:revert` | Revierte la última migración |
+| `npm run seed:run` | Ejecuta seeders para datos iniciales |
+
+## 🔍 Ejemplos de uso
+
+### Autenticación de usuarios
+
+```typescript
+// POST /auth/login
+const credentials = {
+  email: 'usuario@ejemplo.com',
+  password: 'contraseña123'
+};
+
+// Respuesta:
+{
+  "success": true,
+  "message": "Login exitoso",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "expiresIn": 3600,
+    "tokenType": "Bearer"
+  },
+  "timestamp": "2023-10-27T12:00:00.000Z"
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Protección de rutas con roles
 
-## Resources
+```typescript
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { UserTypes } from '../common/decorators/metadata/user-types.decorator';
+import { UserTypesGuard } from '../common/guards/user-types.guard';
 
-Check out a few resources that may come in handy when working with NestJS:
+@Controller('admin')
+export class AdminController {
+  @Get('dashboard')
+  @UserTypes('admin')
+  @UseGuards(JwtAuthGuard, UserTypesGuard)
+  getDashboard() {
+    // Solo accesible para usuarios con rol 'admin'
+    return this.adminService.getDashboardData();
+  }
+}
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Acceso al usuario actual
 
-## Support
+```typescript
+import { LoggedInUser } from '../common/decorators/requests/logged-in-user.decorator';
+import { IJwtUser } from '../authentication/interfaces/jwt-user.interface';
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+@Get('profile')
+@UseGuards(JwtAuthGuard)
+getProfile(@LoggedInUser() user: IJwtUser) {
+  return this.usersService.findById(user.id);
+}
+```
 
-## Stay in touch
+## 🛠️ Tecnologías principales
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- **NestJS**: Framework progresivo para Node.js
+- **TypeScript**: Superset tipado de JavaScript
+- **TypeORM**: ORM para TypeScript y JavaScript
+- **PostgreSQL/MySQL**: Base de datos relacional
+- **JWT**: Autenticación con tokens
+- **class-validator**: Validación de datos
+- **class-transformer**: Serialización de respuestas
+- **Jest**: Framework de testing
 
-## License
+## 🤝 Contribución
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-# NestJS-Template
+Las contribuciones son bienvenidas y apreciadas! Para contribuir:
+
+1. Haz un fork del proyecto
+2. Crea una rama para tu funcionalidad/corrección (`git checkout -b feature/amazing-feature`)
+3. Haz commit de tus cambios (`git commit -m 'Add: amazing feature'`)
+4. Sube la rama (`git push origin feature/amazing-feature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+

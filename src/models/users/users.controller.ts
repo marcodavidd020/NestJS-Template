@@ -11,10 +11,12 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  NotFoundException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserSerializer } from './serializers/user.serializer';
-import { IUserCreate, IUserUpdate } from './interfaces/user.interface';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -34,7 +36,7 @@ export class UsersController {
   }
 
   @Post()
-  async create(@Body() userData: IUserCreate): Promise<UserSerializer> {
+  async create(@Body() userData: CreateUserDto): Promise<UserSerializer> {
     const user = await this.usersService.create(userData);
     return new UserSerializer(user);
   }
@@ -42,9 +44,12 @@ export class UsersController {
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() userData: IUserUpdate,
+    @Body() userData: UpdateUserDto,
   ): Promise<UserSerializer> {
     const user = await this.usersService.update(id, userData);
+    if (!user) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
     return new UserSerializer(user);
   }
 

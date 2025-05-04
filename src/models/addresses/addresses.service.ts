@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { AddressesRepository } from './repositories/addresses.repository';
 import { AddressSerializer } from './serializers/address.serializer';
-import { IAddressCreate, IAddressUpdate } from './interfaces/address.interface';
+import { CreateAddressDto } from './dto/create-address.dto';
+import { UpdateAddressDto } from './dto/update-address.dto';
 
 @Injectable()
 export class AddressesService {
@@ -23,29 +24,22 @@ export class AddressesService {
     return this.addressesRepository.findByUserId(userId);
   }
 
-  async create(addressData: IAddressCreate): Promise<AddressSerializer> {
-    try {
-      return await this.addressesRepository.create(addressData);
-    } catch (error) {
-      if (error.message.includes('not found')) {
-        throw new NotFoundException(error.message);
-      }
-      throw error;
-    }
+  async create(addressData: CreateAddressDto): Promise<AddressSerializer> {
+    return this.addressesRepository.create({
+      ...addressData,
+      userId: addressData.userId
+    });
   }
 
   async update(
     id: string,
-    addressData: IAddressUpdate,
-  ): Promise<AddressSerializer> {
-    const updatedAddress = await this.addressesRepository.updateById(
-      id,
-      addressData,
-    );
-    if (!updatedAddress) {
-      throw new NotFoundException(`Address with ID ${id} not found`);
+    addressData: UpdateAddressDto,
+  ): Promise<AddressSerializer | null> {
+    const updated = await this.addressesRepository.update(id, addressData);
+    if (!updated) {
+      return null;
     }
-    return updatedAddress;
+    return updated;
   }
 
   async delete(id: string): Promise<void> {
@@ -68,6 +62,10 @@ export class AddressesService {
       );
     }
 
-    return this.update(id, { isDefault: true });
+    const updated = await this.update(id, { isDefault: true });
+    if (!updated) {
+      throw new NotFoundException(`Address with ID ${id} not found`);
+    }
+    return updated;
   }
 }

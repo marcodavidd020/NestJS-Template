@@ -7,6 +7,8 @@ import { UsersRepository } from './repositories/users.repository';
 import { UserSerializer } from './serializers/user.serializer';
 import { IUserCreate, IUserUpdate } from './interfaces/user.interface';
 import * as bcrypt from 'bcrypt';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -28,7 +30,7 @@ export class UsersService {
     return this.usersRepository.findByEmail(email);
   }
 
-  async create(userData: IUserCreate): Promise<UserSerializer> {
+  async create(userData: CreateUserDto): Promise<UserSerializer> {
     // Verificar si el email ya existe
     const existingUser = await this.usersRepository.findByEmail(userData.email);
     if (existingUser) {
@@ -45,7 +47,10 @@ export class UsersService {
     });
   }
 
-  async update(id: string, userData: IUserUpdate): Promise<UserSerializer> {
+  async update(
+    id: string,
+    userData: UpdateUserDto,
+  ): Promise<UserSerializer | null> {
     // Si se proporciona una nueva contraseña, encriptarla
     if (userData.password) {
       const saltRounds = 10;
