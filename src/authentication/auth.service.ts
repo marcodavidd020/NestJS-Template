@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../models/users/users.service';
 import { ILoginCredentials } from './interfaces/login.interface';
@@ -6,6 +6,7 @@ import { TokenSerializer } from './serializers/token.serializer';
 import { ConfigService } from '@nestjs/config';
 import { IJwtPayload } from './interfaces/jwt-payload.interface';
 import { UserSerializer } from '../models/users/serializers/user.serializer';
+import { createNotFoundResponse } from 'src/common/helpers/responses/error.helper';
 
 @Injectable()
 export class AuthService {
@@ -142,6 +143,13 @@ export class AuthService {
    * Obtiene el perfil del usuario actual
    */
   async getProfile(userId: string): Promise<UserSerializer> {
-    return this.usersService.findById(userId);
+    try {
+      return await this.usersService.findById(userId);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new NotFoundException(createNotFoundResponse('Usuario'));
+    }
   }
 }

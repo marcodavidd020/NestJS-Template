@@ -10,7 +10,7 @@ import { IUserCreate, IUserUpdate } from './interfaces/user.interface';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-
+import { createNotFoundResponse } from 'src/common/helpers/responses/error.helper';
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
@@ -24,7 +24,7 @@ export class UsersService {
   async findById(id: string): Promise<UserSerializer> {
     const user = await this.usersRepository.findById(id);
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(createNotFoundResponse('Usuario'));
     }
     return user;
   }
@@ -33,7 +33,10 @@ export class UsersService {
     try {
       return await this.usersRepository.findByEmail(email);
     } catch (error) {
-      this.logger.error(`Error al buscar usuario por email ${email}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error al buscar usuario por email ${email}: ${error.message}`,
+        error.stack,
+      );
       return null;
     }
   }
@@ -49,9 +52,9 @@ export class UsersService {
           {
             field: 'email',
             errors: [`El email ${userData.email} ya está en uso`],
-            value: userData.email
-          }
-        ]
+            value: userData.email,
+          },
+        ],
       });
     }
 
@@ -97,16 +100,16 @@ export class UsersService {
     try {
       // En este caso podemos usar directamente el método para buscar un usuario con contraseña
       this.logger.debug(`Validando contraseña para el email: ${email}`);
-      
+
       const userEntity = await this.usersRepository.findUserWithPassword(email);
-      
+
       if (!userEntity) {
         this.logger.debug(`No se encontró usuario con email: ${email}`);
         // Retornar null en lugar de lanzar una excepción para permitir que AuthService
         // maneje el error con su propio formato
         return null;
       }
-      
+
       if (!userEntity.password) {
         this.logger.warn(`Usuario encontrado pero sin contraseña: ${email}`);
         return null;
@@ -114,9 +117,9 @@ export class UsersService {
 
       const isPasswordValid = await bcrypt.compare(
         password,
-        userEntity.password
+        userEntity.password,
       );
-      
+
       if (!isPasswordValid) {
         this.logger.debug(`Contraseña inválida para el usuario: ${email}`);
         return null;
@@ -125,7 +128,10 @@ export class UsersService {
       this.logger.debug(`Validación de contraseña exitosa para: ${email}`);
       return this.usersRepository.findByEmail(email);
     } catch (error) {
-      this.logger.error(`Error validando contraseña para ${email}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error validando contraseña para ${email}: ${error.message}`,
+        error.stack,
+      );
       return null;
     }
   }

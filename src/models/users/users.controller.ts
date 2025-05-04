@@ -65,14 +65,18 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
   @Get(':id')
   async findById(@Param('id') id: string): Promise<ISuccessResponse<UserSerializer>> {
-    const user = await this.usersService.findById(id);
-    if (!user) {
+    try {
+      const user = await this.usersService.findById(id);
+      return createSuccessResponse(
+        new UserSerializer(user),
+          `Usuario ${capitalize(user.firstName)} encontrado`,
+      );
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new NotFoundException(createNotFoundResponse('Usuario'));
     }
-    return createSuccessResponse(
-      new UserSerializer(user),
-      `Usuario ${capitalize(user.firstName)} encontrado`,
-    );
   }
 
   @ApiOperation({ summary: 'Crear nuevo usuario' })

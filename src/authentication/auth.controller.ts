@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -38,6 +39,11 @@ export class AuthController {
       const token = await this.authService.login(user);
       return createSuccessResponse(token, 'Inicio de sesión exitoso');
     } catch (error) {
+
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+
       throw new UnauthorizedException(
         createUnauthorizedResponse('Credenciales incorrectas. Por favor, verifique su email y contraseña.')
       );
@@ -51,12 +57,25 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   async getProfile(@LoggedInUser() user: IJwtUser): Promise<any> {
-    // Obtenemos los datos del usuario a partir del ID en el token JWT
-    const profile = await this.authService.getProfile(user.id);
-    return createSuccessResponse(
-      new UserSerializer(profile),
-      'Perfil recuperado exitosamente'
-    );
+    try {
+      // Obtenemos los datos del usuario a partir del ID en el token JWT
+      const profile = await this.authService.getProfile(user.id);
+      return createSuccessResponse(
+        new UserSerializer(profile),
+        'Perfil recuperado exitosamente'
+      );
+    } catch (error) {
+      if (
+        error instanceof UnauthorizedException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+
+      throw new UnauthorizedException(
+        createUnauthorizedResponse('No autorizado')
+      );
+    }
   }
 
   @ApiOperation({ summary: 'Renovar token', description: 'Renovar el token JWT actual' })
