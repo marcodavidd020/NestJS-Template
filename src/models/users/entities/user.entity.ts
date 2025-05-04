@@ -31,8 +31,11 @@ export class User {
   @Column({ nullable: true })
   avatar: string;
 
-  @Column({ type: 'simple-array', nullable: true })
+  @Column({ type: 'text', nullable: true })
   roles: string[];
+
+  @Column({ length: 20, nullable: true })
+  phoneNumber: string;
 
   @OneToMany('Address', 'user')
   addresses: Address[];

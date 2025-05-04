@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
 } from 'typeorm';
-import { type User } from '../../../models'; // Importar solo el tipo para evitar circular refs
+import { type User } from '../../../models';
 
 @Entity('addresses')
 export class Address {

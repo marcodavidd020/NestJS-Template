@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Address } from '../entities/address.entity';
@@ -25,6 +25,9 @@ export class AddressesRepository extends ModelRepository<
     this.metadata = this.repository.metadata;
   }
 
+  /**
+   * Obtener todas las direcciones
+   */
   async findAll(): Promise<AddressSerializer[]> {
     return this.getAll(['user']);
   }
@@ -33,16 +36,22 @@ export class AddressesRepository extends ModelRepository<
     return this.get(id, ['user']);
   }
 
+  /**
+   * Buscar direcciones por usuario
+   */
   async findByUserId(userId: string): Promise<AddressSerializer[]> {
     return this.getAllBy({ user: { id: userId } }, ['user']);
   }
 
+  /**
+   * Crear una nueva dirección
+   */
   async create(addressData: IAddressCreate): Promise<AddressSerializer> {
     const { userId, ...data } = addressData;
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new Error(`User with ID ${userId} not found`);
+      throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
     }
 
     // Si la dirección se establece como predeterminada, actualizar las otras direcciones
@@ -71,10 +80,6 @@ export class AddressesRepository extends ModelRepository<
   ): Promise<AddressSerializer | null> {
     const address = await this.get(id, ['user'], true);
 
-    // Como estamos usando throwsException = true en get(),
-    // si address es null, ya se habrá lanzado una excepción
-    // y no llegaremos a este punto.
-
     // Si la dirección se establece como predeterminada, actualizar las otras direcciones
     if (addressData.isDefault && !address!.isDefault) {
       await this.update(
@@ -86,7 +91,30 @@ export class AddressesRepository extends ModelRepository<
     return this.updateEntity(id, addressData, ['user']);
   }
 
+  /**
+   * Eliminar una dirección
+   */
   async delete(id: string): Promise<boolean> {
     return this.deleteEntity(id);
+  }
+
+  /**
+   * Establecer una dirección como predeterminada
+   */
+  async setAsDefault(
+    id: string,
+    userId: string,
+  ): Promise<AddressSerializer | null> {
+    // Primero quitamos el default de todas las direcciones del usuario
+    await this.repository.update(
+      { user: { id: userId } as any },
+      { isDefault: false },
+    );
+
+    // Luego establecemos esta dirección como predeterminada
+    await this.repository.update(id, { isDefault: true });
+
+    // Retornamos la dirección actualizada
+    return this.get(id, ['user'], true);
   }
 }

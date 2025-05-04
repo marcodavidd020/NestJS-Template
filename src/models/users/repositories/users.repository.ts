@@ -15,18 +15,43 @@ export class UsersRepository extends ModelRepository<User, UserSerializer> {
     this.metadata = this.repository.metadata;
   }
 
+  /**
+   * Obtener todos los usuarios
+   */
   async findAll(): Promise<UserSerializer[]> {
     return this.getAll(['addresses']);
   }
 
+  /**
+   * Buscar usuario por id
+   */
   async findById(id: string): Promise<UserSerializer | null> {
     return this.get(id, ['addresses']);
   }
 
+  /**
+   * Buscar usuario por email
+   */
   async findByEmail(email: string): Promise<UserSerializer | null> {
     return this.getBy({ email }, [], false);
   }
 
+  /**
+   * Buscar usuario con contraseña (para login)
+   */
+  async findUserWithPassword(email: string): Promise<UserSerializer | null> {
+    const user = await this.repository
+      .createQueryBuilder('user')
+      .where('user.email = :email', { email })
+      .addSelect('user.password')
+      .getOne();
+
+    return user ? this.transform(user) : null;
+  }
+
+  /**
+   * Crear un nuevo usuario
+   */
   async create(userData: IUserCreate): Promise<UserSerializer> {
     return this.createEntity(userData, ['addresses']);
   }
@@ -38,6 +63,9 @@ export class UsersRepository extends ModelRepository<User, UserSerializer> {
     return this.updateEntity(id, userData, ['addresses']);
   }
 
+  /**
+   * Eliminar un usuario
+   */
   async delete(id: string): Promise<boolean> {
     return this.deleteEntity(id);
   }

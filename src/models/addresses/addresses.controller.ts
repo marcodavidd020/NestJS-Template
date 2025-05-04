@@ -25,7 +25,7 @@ export class AddressesController {
   async findAll(
     @Query('userId') userId?: string,
   ): Promise<AddressSerializer[]> {
-    let addresses;
+    let addresses: AddressSerializer[];
 
     if (userId) {
       addresses = await this.addressesService.findByUserId(userId);

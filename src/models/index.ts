@@ -1,12 +1,16 @@
-// Entities
+// Exportación de entidades
 export { User } from './users/entities/user.entity';
 export { Address } from './addresses/entities/address.entity';
 
-// Repositories
+// Exportación de repositorios
 export { UsersRepository } from './users/repositories/users.repository';
 export { AddressesRepository } from './addresses/repositories/addresses.repository';
 
-// Services
+// Exportación de módulos
+export { UsersModule } from './users/users.module';
+export { AddressesModule } from './addresses/addresses.module';
+
+// Exportación de servicios
 export { UsersService } from './users/users.service';
 export { AddressesService } from './addresses/addresses.service';
 

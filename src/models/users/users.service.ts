@@ -71,19 +71,9 @@ export class UsersService {
     email: string,
     password: string,
   ): Promise<UserSerializer | null> {
-    const user = await this.usersRepository.findByEmail(email);
-    if (!user) {
-      return null;
-    }
-
-    // En este punto necesitamos acceder a la contraseña, pero puede no estar en la respuesta serializada
-    // Podríamos necesitar una consulta adicional o un método específico para esto
-    const userWithPassword = await this.usersRepository.getBy(
-      { email },
-      [],
-      false,
-    );
-
+    // En este caso podemos usar directamente el método para buscar un usuario con contraseña
+    const userWithPassword =
+      await this.usersRepository.findUserWithPassword(email);
     if (!userWithPassword || !userWithPassword['password']) {
       return null;
     }
@@ -96,6 +86,6 @@ export class UsersService {
       return null;
     }
 
-    return user;
+    return this.usersRepository.findByEmail(email);
   }
 }

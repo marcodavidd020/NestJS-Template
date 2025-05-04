@@ -54,3 +54,9 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# TypeORM migrations
+# Ignorar archivos de migraciones pero mantener la carpeta
+src/database/migrations/*.ts
+src/database/migrations/*.js
+!src/database/migrations/.gitkeep

@@ -1,3 +1,49 @@
+# Estructura Base NestJS
+
+Esta estructura base para proyectos NestJS implementa una arquitectura modular con separación clara de responsabilidades.
+
+## Características principales
+
+- **Configuración modular**: Estructura flexible para diferentes entornos
+- **Proveedores de servicios**: Conexiones a servicios externos (bases de datos, cache, cola, etc.)
+- **Repositorios con patrón base**: Implementación de CRUD reutilizable
+- **Migraciones y seeders**: Gestión de esquema y datos iniciales
+- **Serialización de respuestas**: Transformación de entidades a respuestas API
+
+## Documentación
+
+La documentación se encuentra en la carpeta `src/document/`:
+
+- [Estructura General del Proyecto](src/document/estructura-general.md) - Visión general de la organización
+- [Estructura de Base de Datos](src/document/database-estructura.md) - Capas de BD, migraciones y seeding
+- [Estructura de Modelos](src/document/estructura-modelos.md) - Entidades, repositorios y servicios
+- [Configuración del Sistema](src/document/configuracion-sistema.md) - Variables de entorno y configuración
+- [Estructura de Proveedores](src/document/providers-estructura.md) - Conexiones a servicios externos
+- [Generación de Migraciones](src/document/database-migraciones.md) - Generación automática de migraciones
+
+## Configuración
+
+El proyecto usa un sistema de configuración basado en archivos `.env`. Copie `.env.example` a `.env` y ajuste los valores:
+
+```bash
+cp .env.example .env
+```
+
+## Comandos disponibles
+
+```bash
+# Desarrollo
+npm run start:dev
+
+# Migraciones
+npm run migration:generate
+npm run migration:run
+npm run migration:revert
+
+# Seeders
+npm run seed
+```
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
@@ -96,10 +142,4 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-# NestJS-Template
-# NestJS-Template
-# NestJS-Template
-# NestJS-Template
-# NestJS-Template
-# NestJS-Template
 # NestJS-Template
