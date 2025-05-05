@@ -12,6 +12,13 @@ export class TokenSerializer implements IToken {
   accessToken: string;
 
   @ApiProperty({
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    description: 'Token de renovación JWT (duración más larga)',
+  })
+  @Expose()
+  refreshToken: string;
+
+  @ApiProperty({
     example: 3600,
     description: 'Tiempo de expiración en segundos',
   })

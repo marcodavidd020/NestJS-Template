@@ -6,7 +6,8 @@ import { TokenSerializer } from './serializers/token.serializer';
 import { ConfigService } from '@nestjs/config';
 import { IJwtPayload } from './interfaces/jwt-payload.interface';
 import { UserSerializer } from '../models/users/serializers/user.serializer';
-import { createNotFoundResponse } from 'src/common/helpers/responses/error.helper';
+import { createNotFoundResponse, createUnauthorizedResponse } from 'src/common/helpers/responses/error.helper';
+import { JwtConfigService } from '../config/auth/jwt/config.service';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly jwtConfigService: JwtConfigService,
   ) {}
 
   /**
@@ -101,7 +103,7 @@ export class AuthService {
   }
 
   /**
-   * Genera un token JWT
+   * Genera un token JWT y refresh token
    */
   async login(user: UserSerializer): Promise<TokenSerializer> {
     // Asegurar que los roles son un array
@@ -119,24 +121,78 @@ export class AuthService {
     );
 
     // Obtener configuración de expiración
-    const jwtExpiresIn = this.configService.get<string>('JWT_EXPIRES_IN', '1h');
+    const jwtExpiresIn = this.jwtConfigService.getJwtExpiresIn();
     const expiresInSeconds = this.parseExpirationTime(jwtExpiresIn);
+
+    // Obtener configuración para refresh token
+    const refreshTokenExpiresIn = this.jwtConfigService.getRefreshTokenExpiresIn();
 
     this.logger.debug(
       `Generando token JWT con expiración: ${jwtExpiresIn} (${expiresInSeconds} segundos)`,
     );
 
-    // Generar token
+    // Generar tokens
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: jwtExpiresIn,
+    });
+
+    // Generar refresh token con payload extendido
+    const refreshTokenPayload = {
+      ...payload,
+      tokenType: 'refresh',
+    };
+
+    const refreshToken = this.jwtService.sign(refreshTokenPayload, {
+      expiresIn: refreshTokenExpiresIn,
     });
 
     // Devolver respuesta serializada
     return new TokenSerializer({
       accessToken,
+      refreshToken,
       expiresIn: expiresInSeconds,
       tokenType: 'Bearer',
     });
+  }
+
+  /**
+   * Valida un refresh token y genera nuevos tokens
+   */
+  async refreshTokens(refreshToken: string): Promise<TokenSerializer> {
+    try {
+      // Verificar el token
+      const payload = this.jwtService.verify(refreshToken);
+      
+      // Verificar que es un refresh token
+      if (payload.tokenType !== 'refresh') {
+        throw new UnauthorizedException(
+          createUnauthorizedResponse('Token inválido'),
+        );
+      }
+
+      // Obtener el usuario
+      const user = await this.usersService.findById(payload.sub);
+      if (!user || !user.isActive) {
+        throw new UnauthorizedException(
+          createUnauthorizedResponse('Usuario no encontrado o inactivo'),
+        );
+      }
+
+      // Generar nuevos tokens
+      return this.login(user);
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException(
+          createUnauthorizedResponse('El refresh token ha expirado. Inicie sesión nuevamente.'),
+        );
+      }
+      if (error.name === 'JsonWebTokenError') {
+        throw new UnauthorizedException(
+          createUnauthorizedResponse('Token inválido'),
+        );
+      }
+      throw error;
+    }
   }
 
   /**

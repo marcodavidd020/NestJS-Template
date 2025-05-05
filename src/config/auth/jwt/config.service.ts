@@ -23,6 +23,13 @@ export class JwtConfigService {
   }
 
   /**
+   * Obtiene el tiempo de expiración para los refresh tokens
+   */
+  getRefreshTokenExpiresIn(): string {
+    return this.configService.get<string>('REFRESH_TOKEN_EXPIRES_IN', '7d');
+  }
+
+  /**
    * Obtiene la configuración completa para el módulo JWT
    */
   getJwtConfig() {

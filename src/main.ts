@@ -7,17 +7,24 @@ import { ResponseTransformInterceptor } from './common/interceptors/response-tra
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
+  // Habilitar CORS para todos los orígenes
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
   const appConfig = app.get(AppConfigService);
-  
+
   const port = appConfig.port;
   const globalPrefix = appConfig.apiPrefix;
-  
+
   app.setGlobalPrefix(globalPrefix);
-  
+
   // Usar nuestro ValidationPipe personalizado en lugar del estándar
   app.useGlobalPipes(new CustomValidationPipe());
-  
+
   // Registrar el interceptor de transformación de respuestas
   app.useGlobalInterceptors(new ResponseTransformInterceptor());
 
@@ -38,12 +45,14 @@ async function bootstrap() {
       'JWT-auth', // Este nombre se usará para referenciar este esquema de seguridad
     )
     .build();
-  
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
   await app.listen(port);
-  
-  console.log(`Application is running on: http://localhost:${port}/${globalPrefix}`);
+
+  console.log(
+    `Application is running on: http://localhost:${port}/${globalPrefix}`,
+  );
 }
 bootstrap();

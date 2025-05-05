@@ -21,6 +21,7 @@ import { LoggedInUser } from '../common/decorators/requests/logged-in-user.decor
 import { IJwtUser } from './interfaces/jwt-user.interface';
 import { createSuccessResponse } from '../common/helpers/responses/success.helper';
 import { createUnauthorizedResponse } from '../common/helpers/responses/error.helper';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('Autenticación')
 @Controller('auth')
@@ -78,16 +79,26 @@ export class AuthController {
     }
   }
 
-  @ApiOperation({ summary: 'Renovar token', description: 'Renovar el token JWT actual' })
+  @ApiOperation({ summary: 'Renovar token', description: 'Renovar tokens usando un refresh token (no requiere autenticación)' })
   @ApiResponse({ status: 200, description: 'Token renovado con éxito', type: TokenSerializer })
-  @ApiResponse({ status: 401, description: 'No autorizado' })
-  @ApiBearerAuth('JWT-auth')
-  @UseGuards(JwtAuthGuard)
-  @Get('refresh-token')
-  async refreshToken(@LoggedInUser() user: IJwtUser): Promise<any> {
-    // Obtener los datos completos del usuario para incluirlos en el token
-    const userProfile = await this.authService.getProfile(user.id);
-    const token = await this.authService.login(userProfile);
-    return createSuccessResponse(token, 'Token renovado exitosamente');
+  @ApiResponse({ status: 401, description: 'Refresh token inválido o expirado' })
+  @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto): Promise<any> {
+    try {
+      const tokens = await this.authService.refreshTokens(refreshTokenDto.refreshToken);
+      return createSuccessResponse(tokens, 'Tokens renovados exitosamente');
+    } catch (error) {
+      if (
+        error instanceof UnauthorizedException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+      
+      throw new UnauthorizedException(
+        createUnauthorizedResponse('Error al renovar los tokens. Refresh token inválido o expirado.')
+      );
+    }
   }
 }

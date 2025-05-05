@@ -12,6 +12,7 @@ import { JwtConfigService } from './config.service';
       validationSchema: Joi.object({
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRES_IN: Joi.string().default('1h'),
+        REFRESH_TOKEN_EXPIRES_IN: Joi.string().default('7d'),
       }),
     }),
   ],
