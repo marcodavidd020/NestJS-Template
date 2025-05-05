@@ -11,7 +11,12 @@ import {
   UnauthorizedException,
   NotFoundException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { TokenSerializer } from './serializers/token.serializer';
@@ -29,8 +34,15 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @ApiOperation({ summary: 'Iniciar sesión', description: 'Obtiene un token JWT a partir de credenciales válidas' })
-  @ApiResponse({ status: 201, description: 'Login exitoso', type: TokenSerializer })
+  @ApiOperation({
+    summary: 'Iniciar sesión',
+    description: 'Obtiene un token JWT a partir de credenciales válidas',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Login exitoso',
+    type: TokenSerializer,
+  })
   @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -40,19 +52,27 @@ export class AuthController {
       const token = await this.authService.login(user);
       return createSuccessResponse(token, 'Inicio de sesión exitoso');
     } catch (error) {
-
       if (error instanceof UnauthorizedException) {
         throw error;
       }
 
       throw new UnauthorizedException(
-        createUnauthorizedResponse('Credenciales incorrectas. Por favor, verifique su email y contraseña.')
+        createUnauthorizedResponse(
+          'Credenciales incorrectas. Por favor, verifique su email y contraseña.',
+        ),
       );
     }
   }
 
-  @ApiOperation({ summary: 'Obtener perfil de usuario', description: 'Obtiene el perfil del usuario autenticado' })
-  @ApiResponse({ status: 200, description: 'Perfil recuperado con éxito', type: UserSerializer })
+  @ApiOperation({
+    summary: 'Obtener perfil de usuario',
+    description: 'Obtiene el perfil del usuario autenticado',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil recuperado con éxito',
+    type: UserSerializer,
+  })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
@@ -63,7 +83,7 @@ export class AuthController {
       const profile = await this.authService.getProfile(user.id);
       return createSuccessResponse(
         new UserSerializer(profile),
-        'Perfil recuperado exitosamente'
+        'Perfil recuperado exitosamente',
       );
     } catch (error) {
       if (
@@ -74,19 +94,32 @@ export class AuthController {
       }
 
       throw new UnauthorizedException(
-        createUnauthorizedResponse('No autorizado')
+        createUnauthorizedResponse('No autorizado'),
       );
     }
   }
 
-  @ApiOperation({ summary: 'Renovar token', description: 'Renovar tokens usando un refresh token (no requiere autenticación)' })
-  @ApiResponse({ status: 200, description: 'Token renovado con éxito', type: TokenSerializer })
-  @ApiResponse({ status: 401, description: 'Refresh token inválido o expirado' })
+  @ApiOperation({
+    summary: 'Renovar token',
+    description:
+      'Renovar tokens usando un refresh token (no requiere autenticación)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Token renovado con éxito',
+    type: TokenSerializer,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Refresh token inválido o expirado',
+  })
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto): Promise<any> {
     try {
-      const tokens = await this.authService.refreshTokens(refreshTokenDto.refreshToken);
+      const tokens = await this.authService.refreshTokens(
+        refreshTokenDto.refreshToken,
+      );
       return createSuccessResponse(tokens, 'Tokens renovados exitosamente');
     } catch (error) {
       if (
@@ -95,9 +128,11 @@ export class AuthController {
       ) {
         throw error;
       }
-      
+
       throw new UnauthorizedException(
-        createUnauthorizedResponse('Error al renovar los tokens. Refresh token inválido o expirado.')
+        createUnauthorizedResponse(
+          'Error al renovar los tokens. Refresh token inválido o expirado.',
+        ),
       );
     }
   }

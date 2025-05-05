@@ -19,6 +19,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UserSerializer } from './serializers/user.serializer';
@@ -28,12 +29,15 @@ import {
   createSuccessResponse,
   createCreatedResponse,
 } from '../../common/helpers/responses/success.helper';
+import { createPaginatedResponse } from '../../common/helpers/responses/pagination.helper';
 import {
   createNotFoundResponse,
   createErrorResponse,
 } from '../../common/helpers/responses/error.helper';
 import { slugify, capitalize } from '../../common/helpers/string.helper';
 import { ISuccessResponse } from '../../common/interfaces/response.interface';
+import { PaginationDto } from '../../common/dto/pagination.dto';
+import { paginatedResponseSchema, paginationQueryParams } from '../../common/schemas/pagination.schema';
 
 @ApiTags('Usuarios')
 @Controller('users')
@@ -44,11 +48,26 @@ export class UsersController {
   @ApiOperation({ summary: 'Obtener todos los usuarios' })
   @ApiResponse({
     status: 200,
-    description: 'Lista de usuarios',
-    type: [UserSerializer],
+    description: 'Lista de usuarios (con o sin paginación)',
+    schema: paginatedResponseSchema('#/components/schemas/UserSerializer'),
   })
+  @ApiQuery(paginationQueryParams[0]) // page
+  @ApiQuery(paginationQueryParams[1]) // limit
   @Get()
-  async findAll(): Promise<ISuccessResponse<UserSerializer[]>> {
+  async findAll(
+    @Query() paginationDto: PaginationDto,
+  ): Promise<ISuccessResponse<UserSerializer[]>> {
+    // Si se proporcionan parámetros de paginación, devolvemos resultados paginados
+    if (paginationDto.page || paginationDto.limit) {
+      const paginatedResult =
+        await this.usersService.findPaginated(paginationDto);
+      return createPaginatedResponse(
+        paginatedResult,
+        'Usuarios recuperados exitosamente',
+      );
+    }
+
+    // Si no se especifican parámetros de paginación, devolvemos todos los usuarios
     const users = await this.usersService.findAll();
     return createSuccessResponse(
       users.map((user) => new UserSerializer(user)),
@@ -64,12 +83,14 @@ export class UsersController {
   })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
   @Get(':id')
-  async findById(@Param('id') id: string): Promise<ISuccessResponse<UserSerializer>> {
+  async findById(
+    @Param('id') id: string,
+  ): Promise<ISuccessResponse<UserSerializer>> {
     try {
       const user = await this.usersService.findById(id);
       return createSuccessResponse(
         new UserSerializer(user),
-          `Usuario ${capitalize(user.firstName)} encontrado`,
+        `Usuario ${capitalize(user.firstName)} encontrado`,
       );
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -88,7 +109,9 @@ export class UsersController {
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 409, description: 'Email ya está en uso' })
   @Post()
-  async create(@Body() userData: CreateUserDto): Promise<ISuccessResponse<UserSerializer>> {
+  async create(
+    @Body() userData: CreateUserDto,
+  ): Promise<ISuccessResponse<UserSerializer>> {
     try {
       // Ejemplo de uso de slugify para crear un nombre de usuario a partir del email
       const username = slugify(userData.email.split('@')[0]);

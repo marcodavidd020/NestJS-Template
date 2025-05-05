@@ -5,6 +5,14 @@ export interface ISuccessResponse<T> {
   success: boolean;
   message: string;
   data: T;
+  pagination?: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
   timestamp: string;
 }
 
@@ -17,4 +25,4 @@ export interface IErrorResponse {
   statusCode: number;
   errors?: any[];
   timestamp: string;
-} 
+}

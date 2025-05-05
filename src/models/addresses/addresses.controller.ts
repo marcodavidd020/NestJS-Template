@@ -14,7 +14,13 @@ import {
   NotFoundException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AddressesService } from './addresses.service';
 import { AddressSerializer } from './serializers/address.serializer';
 import { CreateAddressDto } from './dto/create-address.dto';
@@ -24,11 +30,17 @@ import {
   createSuccessResponse,
   createCreatedResponse,
 } from '../../common/helpers/responses/success.helper';
+import { createPaginatedResponse } from '../../common/helpers/responses/pagination.helper';
 import {
   createNotFoundResponse,
   createErrorResponse,
 } from '../../common/helpers/responses/error.helper';
 import { ISuccessResponse } from '../../common/interfaces/response.interface';
+import { PaginationDto } from '../../common/dto/pagination.dto';
+import {
+  paginatedResponseSchema,
+  paginationQueryParams,
+} from '../../common/schemas/pagination.schema';
 
 @ApiTags('Direcciones')
 @Controller('addresses')
@@ -37,12 +49,36 @@ export class AddressesController {
   constructor(private readonly addressesService: AddressesService) {}
 
   @ApiOperation({ summary: 'Obtener todas las direcciones' })
-  @ApiQuery({ name: 'userId', required: false, description: 'Filtrar por ID de usuario' })
-  @ApiResponse({ status: 200, description: 'Lista de direcciones', type: [AddressSerializer] })
+  @ApiQuery({
+    name: 'userId',
+    required: false,
+    description: 'Filtrar por ID de usuario',
+  })
+  @ApiQuery(paginationQueryParams[0])
+  @ApiQuery(paginationQueryParams[1])
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de direcciones (con o sin paginación)',
+    schema: paginatedResponseSchema('#/components/schemas/AddressSerializer'),
+  })
   @Get()
   async findAll(
     @Query('userId') userId?: string,
+    @Query() paginationDto?: PaginationDto,
   ): Promise<ISuccessResponse<AddressSerializer[]>> {
+    // Si se proporcionan parámetros de paginación, devolvemos resultados paginados
+    if (paginationDto?.page || paginationDto?.limit) {
+      const paginatedResult = await this.addressesService.findPaginated(
+        paginationDto,
+        userId,
+      );
+      return createPaginatedResponse(
+        paginatedResult,
+        'Direcciones recuperadas exitosamente',
+      );
+    }
+
+    // Si no hay paginación, usamos la función original
     let addresses: AddressSerializer[];
 
     if (userId) {
@@ -51,17 +87,23 @@ export class AddressesController {
       addresses = await this.addressesService.findAll();
     }
 
-    return createCreatedResponse(
+    return createSuccessResponse(
       addresses.map((address) => new AddressSerializer(address)),
       'Direcciones recuperadas exitosamente',
     );
   }
 
   @ApiOperation({ summary: 'Obtener dirección por ID' })
-  @ApiResponse({ status: 200, description: 'Dirección encontrada', type: AddressSerializer })
+  @ApiResponse({
+    status: 200,
+    description: 'Dirección encontrada',
+    type: AddressSerializer,
+  })
   @ApiResponse({ status: 404, description: 'Dirección no encontrada' })
   @Get(':id')
-  async findById(@Param('id') id: string): Promise<ISuccessResponse<AddressSerializer>> {
+  async findById(
+    @Param('id') id: string,
+  ): Promise<ISuccessResponse<AddressSerializer>> {
     const address = await this.addressesService.findById(id);
     if (!address) {
       throw new NotFoundException(createNotFoundResponse('Dirección'));
@@ -73,7 +115,11 @@ export class AddressesController {
   }
 
   @ApiOperation({ summary: 'Crear nueva dirección' })
-  @ApiResponse({ status: 201, description: 'Dirección creada', type: AddressSerializer })
+  @ApiResponse({
+    status: 201,
+    description: 'Dirección creada',
+    type: AddressSerializer,
+  })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @Post()
   async create(
@@ -87,7 +133,11 @@ export class AddressesController {
   }
 
   @ApiOperation({ summary: 'Actualizar dirección' })
-  @ApiResponse({ status: 200, description: 'Dirección actualizada', type: AddressSerializer })
+  @ApiResponse({
+    status: 200,
+    description: 'Dirección actualizada',
+    type: AddressSerializer,
+  })
   @ApiResponse({ status: 404, description: 'Dirección no encontrada' })
   @Put(':id')
   async update(
@@ -111,15 +161,19 @@ export class AddressesController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id') id: string): Promise<ISuccessResponse<null>> {
     await this.addressesService.delete(id);
-    return createSuccessResponse(
-      null,
-      'Dirección eliminada exitosamente',
-    );
+    return createSuccessResponse(null, 'Dirección eliminada exitosamente');
   }
 
   @ApiOperation({ summary: 'Establecer dirección como predeterminada' })
-  @ApiResponse({ status: 200, description: 'Dirección establecida como predeterminada', type: AddressSerializer })
-  @ApiResponse({ status: 404, description: 'Dirección no encontrada o no pertenece al usuario' })
+  @ApiResponse({
+    status: 200,
+    description: 'Dirección establecida como predeterminada',
+    type: AddressSerializer,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Dirección no encontrada o no pertenece al usuario',
+  })
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @Put(':id/default')

@@ -6,9 +6,14 @@ import {
   ObjectLiteral,
   EntityTarget,
   EntityManager,
+  FindManyOptions,
 } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import {
+  IPaginatedResult,
+  IPaginationOptions,
+} from '../../../common/interfaces/pagination.interface';
 
 export abstract class ModelRepository<T extends ObjectLiteral, K> {
   protected repository: Repository<T>;
@@ -47,6 +52,44 @@ export abstract class ModelRepository<T extends ObjectLiteral, K> {
       .catch((error) => Promise.reject(error));
   }
 
+  async paginate(
+    options: IPaginationOptions = {},
+    relations: string[] = [],
+    where?: FindOptionsWhere<T>,
+  ): Promise<IPaginatedResult<K>> {
+    const page = options.page || 1;
+    const limit = options.limit || 10;
+
+    const skip = (page - 1) * limit;
+
+    const findOptions: FindManyOptions<T> = {
+      relations,
+      skip,
+      take: limit,
+    };
+
+    if (where) {
+      findOptions.where = where;
+    }
+
+    const [entities, totalItems] =
+      await this.repository.findAndCount(findOptions);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: this.transformMany(entities),
+      pagination: {
+        totalItems,
+        totalPages,
+        currentPage: page,
+        pageSize: limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    };
+  }
+
   async getBy(
     where: FindOptionsWhere<T>,
     relations: string[] = [],
@@ -72,6 +115,14 @@ export abstract class ModelRepository<T extends ObjectLiteral, K> {
       .find({ where, relations })
       .then((entities) => this.transformMany(entities))
       .catch((error) => Promise.reject(error));
+  }
+
+  async paginateBy(
+    where: FindOptionsWhere<T>,
+    options: IPaginationOptions = {},
+    relations: string[] = [],
+  ): Promise<IPaginatedResult<K>> {
+    return this.paginate(options, relations, where);
   }
 
   async createEntity(

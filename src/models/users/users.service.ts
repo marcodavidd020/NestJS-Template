@@ -11,6 +11,8 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { createNotFoundResponse } from 'src/common/helpers/responses/error.helper';
+import { IPaginatedResult, IPaginationOptions } from '../../common/interfaces/pagination.interface';
+
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
@@ -19,6 +21,10 @@ export class UsersService {
 
   async findAll(): Promise<UserSerializer[]> {
     return this.usersRepository.findAll();
+  }
+
+  async findPaginated(options: IPaginationOptions): Promise<IPaginatedResult<UserSerializer>> {
+    return this.usersRepository.paginate(options, ['addresses']);
   }
 
   async findById(id: string): Promise<UserSerializer> {

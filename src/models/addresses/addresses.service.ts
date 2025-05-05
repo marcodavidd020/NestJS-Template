@@ -3,6 +3,7 @@ import { AddressesRepository } from './repositories/addresses.repository';
 import { AddressSerializer } from './serializers/address.serializer';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
+import { IPaginatedResult, IPaginationOptions } from '../../common/interfaces/pagination.interface';
 
 @Injectable()
 export class AddressesService {
@@ -10,6 +11,13 @@ export class AddressesService {
 
   async findAll(): Promise<AddressSerializer[]> {
     return this.addressesRepository.findAll();
+  }
+
+  async findPaginated(options: IPaginationOptions, userId?: string): Promise<IPaginatedResult<AddressSerializer>> {
+    if (userId) {
+      return this.addressesRepository.paginateBy({ user: { id: userId } }, options, ['user']);
+    }
+    return this.addressesRepository.paginate(options, ['user']);
   }
 
   async findById(id: string): Promise<AddressSerializer> {
