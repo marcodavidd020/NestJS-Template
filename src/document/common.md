@@ -13,6 +13,7 @@ El módulo implementa una arquitectura de capas con los siguientes componentes:
 - **Helpers**: Funciones utilitarias para tareas comunes
 - **Serializadores**: Transforman entidades en respuestas API
 - **Middleware**: Procesan solicitudes antes de llegar a los controladores
+- **Paginación**: Sistema completo para respuestas paginadas en la API
 
 ## Estructura de Directorios
 
@@ -38,11 +39,14 @@ common/
 │   │   └── validation.helper.ts
 │   ├── responses/            # Formateo de respuestas
 │   │   ├── error.helper.ts
-│   │   └── success.helper.ts
+│   │   ├── success.helper.ts
+│   │   └── pagination.helper.ts # Helpers para respuestas paginadas
 │   └── string.helper.ts      # Manipulación de strings
 ├── interfaces/                # Interfaces comunes
 │   ├── inputs.interface.ts   # Para parametrización
-│   └── search.interface.ts   # Para resultados paginados
+│   ├── search.interface.ts   # Para resultados paginados
+│   ├── paginated-result.interface.ts # Para resultados paginados
+│   └── pagination-options.interface.ts # Para opciones de paginación
 ├── interceptors/              # Interceptores
 │   └── http-cache.interceptor.ts
 ├── middleware/                # Middleware
@@ -95,6 +99,40 @@ Los helpers son funciones de utilidad que pueden ser utilizadas en cualquier par
 | `createUnauthorizedResponse()` | Error 401 | `message?: string` |
 | `createForbiddenResponse()` | Error 403 | `message?: string` |
 
+### Helpers de Paginación
+
+| Función | Descripción | Parámetros |
+|---------|-------------|------------|
+| `createPaginatedResponse()` | Crea respuesta paginada | `entities: any[], totalItems: number, options: PaginationOptions` |
+| `getPaginationMetadata()` | Genera metadatos de paginación | `totalItems: number, options: PaginationOptions` |
+| `calculateTotalPages()` | Calcula el número total de páginas | `totalItems: number, limit: number` |
+
+#### Interfaces de Paginación
+
+El sistema incluye las siguientes interfaces para trabajar con datos paginados:
+
+```typescript
+// Opciones de paginación para las consultas
+export interface PaginationOptions {
+  page: number;
+  limit: number;
+  route?: string;
+}
+
+// Estructura de resultado paginado
+export interface PaginatedResult<T> {
+  items: T[];
+  meta: {
+    totalItems: number;
+    itemsPerPage: number;
+    totalPages: number;
+    currentPage: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
+}
+```
+
 #### Dónde utilizar los Helpers
 
 Los helpers se utilizan principalmente en:
@@ -103,6 +141,7 @@ Los helpers se utilizan principalmente en:
 2. **Servicios**: Para generar mensajes de error estandarizados
 3. **Excepciones personalizadas**: Para mantener un formato de error consistente
 4. **Interceptores**: Para transformar respuestas antes de enviarlas al cliente
+5. **Repositorios**: Para estandarizar resultados paginados
 
 ### Helpers de String
 
@@ -228,6 +267,37 @@ async findOne(@Param('id') id: string) {
 async create(@Body() data) {
   const created = await this.service.create(data);
   return createCreatedResponse(created, 'Artículo');
+}
+```
+
+### Paginación de Resultados
+
+```typescript
+import { PaginationOptions } from '../common/interfaces/pagination-options.interface';
+import { createPaginatedResponse } from '../common/helpers/responses/pagination.helper';
+
+@Get()
+async findAll(@Query('page') page = 1, @Query('limit') limit = 10) {
+  const options: PaginationOptions = { page, limit };
+  const { items, totalItems } = await this.service.findPaginated(options);
+  
+  return createPaginatedResponse(items, totalItems, options);
+}
+```
+
+### Búsqueda con Paginación
+
+```typescript
+@Get('search')
+async search(
+  @Query('q') query: string,
+  @Query('page') page = 1,
+  @Query('limit') limit = 10,
+) {
+  const options: PaginationOptions = { page, limit };
+  const { items, totalItems } = await this.service.search(query, options);
+  
+  return createPaginatedResponse(items, totalItems, options);
 }
 ```
 

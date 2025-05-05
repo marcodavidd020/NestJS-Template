@@ -17,7 +17,7 @@ La estructura está inspirada en el artículo [Best Way to Structure Your Direct
 ## 📋 Características
 
 - ✅ **Arquitectura hexagonal** con clara separación de responsabilidades
-- ✅ **Sistema de autenticación** completo con JWT
+- ✅ **Sistema de autenticación** completo con JWT y refresh tokens
 - ✅ **Control de acceso** basado en roles (RBAC)
 - ✅ **Base de datos** con TypeORM configurado para múltiples proveedores
 - ✅ **Migraciones automáticas** para gestión de esquema de BD
@@ -26,6 +26,9 @@ La estructura está inspirada en el artículo [Best Way to Structure Your Direct
 - ✅ **Serialización** de respuestas con class-transformer
 - ✅ **Interceptores** para transformación y caché de respuestas
 - ✅ **Gestión de errores** centralizada y consistente
+- ✅ **Paginación** de resultados en endpoints GET
+- ✅ **Búsqueda** avanzada con múltiples campos
+- ✅ **CORS configurado** para permitir solicitudes cruzadas
 - ✅ **Testing** unitario y de integración preconfigurado
 - ✅ **Documentación** detallada de cada módulo y componente
 
@@ -143,10 +146,87 @@ const credentials = {
   "message": "Login exitoso",
   "data": {
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "expiresIn": 3600,
     "tokenType": "Bearer"
   },
   "timestamp": "2023-10-27T12:00:00.000Z"
+}
+```
+
+### Renovación de tokens
+
+```typescript
+// POST /auth/refresh
+const refreshData = {
+  refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+};
+
+// Respuesta:
+{
+  "success": true,
+  "message": "Tokens renovados exitosamente",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "expiresIn": 3600,
+    "tokenType": "Bearer"
+  },
+  "timestamp": "2023-10-27T12:30:00.000Z"
+}
+```
+
+### Paginación de resultados
+
+```typescript
+// GET /api/users?page=2&limit=10
+// Respuesta:
+{
+  "success": true,
+  "message": "Usuarios obtenidos exitosamente",
+  "data": {
+    "items": [
+      { "id": "...", "email": "usuario1@ejemplo.com", ... },
+      { "id": "...", "email": "usuario2@ejemplo.com", ... },
+      // ...más usuarios
+    ],
+    "meta": {
+      "totalItems": 56,
+      "itemsPerPage": 10,
+      "totalPages": 6,
+      "currentPage": 2,
+      "hasNextPage": true,
+      "hasPrevPage": true
+    }
+  },
+  "timestamp": "2023-10-27T14:00:00.000Z"
+}
+```
+
+### Búsqueda con paginación
+
+```typescript
+// GET /api/users/search?q=ejemplo&page=1&limit=10
+// Respuesta:
+{
+  "success": true,
+  "message": "Resultados de búsqueda",
+  "data": {
+    "items": [
+      { "id": "...", "email": "ejemplo1@mail.com", ... },
+      { "id": "...", "email": "usuario@ejemplo.net", ... },
+      // ...más resultados
+    ],
+    "meta": {
+      "totalItems": 15,
+      "itemsPerPage": 10,
+      "totalPages": 2,
+      "currentPage": 1,
+      "hasNextPage": true,
+      "hasPrevPage": false
+    }
+  },
+  "timestamp": "2023-10-27T15:00:00.000Z"
 }
 ```
 
