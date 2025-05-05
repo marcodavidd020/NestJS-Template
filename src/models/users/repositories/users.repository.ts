@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, ILike, In } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { ModelRepository } from '../../common/repositories/model.repository';
 import { UserSerializer } from '../serializers/user.serializer';
 import { IUserCreate, IUserUpdate } from '../interfaces/user.interface';
+import {
+  IPaginatedResult,
+  IPaginationOptions,
+} from '../../../common/interfaces/pagination.interface';
 
 @Injectable()
 export class UsersRepository extends ModelRepository<User, UserSerializer> {
@@ -34,6 +38,74 @@ export class UsersRepository extends ModelRepository<User, UserSerializer> {
    */
   async findByEmail(email: string): Promise<UserSerializer | null> {
     return this.getBy({ email }, [], false);
+  }
+
+  /**
+   * Buscar usuarios por término de búsqueda
+   */
+  async search(
+    query: string,
+    options: IPaginationOptions,
+  ): Promise<IPaginatedResult<UserSerializer>> {
+    // Para debugging
+    console.log(`Buscando usuarios con query: "${query}"`);
+
+    // Construir una consulta con OR para buscar en múltiples campos
+    const queryBuilder = this.repository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.addresses', 'addresses');
+
+    // Añadir condiciones de búsqueda
+    // Usamos LOWER para compatibilidad con diferentes bases de datos
+    queryBuilder
+      .where('LOWER(user.firstName) LIKE LOWER(:query)', {
+        query: `%${query}%`,
+      })
+      .orWhere('LOWER(user.lastName) LIKE LOWER(:query)', {
+        query: `%${query}%`,
+      })
+      .orWhere('LOWER(user.email) LIKE LOWER(:query)', { query: `%${query}%` });
+
+    // Añadir búsqueda en phoneNumber solo si no es null
+    queryBuilder.orWhere(
+      'user.phoneNumber IS NOT NULL AND LOWER(user.phoneNumber) LIKE LOWER(:query)',
+      { query: `%${query}%` },
+    );
+
+    // Calcular la paginación
+    const page = options.page || 1;
+    const limit = options.limit || 10;
+    const skip = (page - 1) * limit;
+
+    // Aplicar paginación
+    queryBuilder.skip(skip).take(limit);
+
+    // Para debugging
+    console.log('SQL generado:', queryBuilder.getSql());
+
+    // Ejecutar la consulta
+    const [entities, totalItems] = await queryBuilder.getManyAndCount();
+
+    // Para debugging
+    console.log(
+      `Encontrados ${entities.length} resultados de un total de ${totalItems}`,
+    );
+
+    // Calcular totalPages
+    const totalPages = Math.ceil(totalItems / limit);
+
+    // Devolver el resultado paginado con el formato esperado
+    return {
+      data: this.transformMany(entities),
+      pagination: {
+        totalItems,
+        totalPages,
+        currentPage: page,
+        pageSize: limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    };
   }
 
   /**

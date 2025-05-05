@@ -37,7 +37,12 @@ import {
 import { slugify, capitalize } from '../../common/helpers/string.helper';
 import { ISuccessResponse } from '../../common/interfaces/response.interface';
 import { PaginationDto } from '../../common/dto/pagination.dto';
-import { paginatedResponseSchema, paginationQueryParams } from '../../common/schemas/pagination.schema';
+import { SearchDto } from '../../common/dto/search.dto';
+import {
+  paginatedResponseSchema,
+  paginationQueryParams,
+  searchQueryParam,
+} from '../../common/schemas/pagination.schema';
 
 @ApiTags('Usuarios')
 @Controller('users')
@@ -72,6 +77,24 @@ export class UsersController {
     return createSuccessResponse(
       users.map((user) => new UserSerializer(user)),
       'Usuarios recuperados exitosamente',
+    );
+  }
+
+  @ApiOperation({ summary: 'Buscar usuarios' })
+  @ApiResponse({
+    status: 200,
+    description: 'Resultados de búsqueda de usuarios',
+    schema: paginatedResponseSchema('#/components/schemas/UserSerializer'),
+  })
+  @ApiQuery(searchQueryParam)
+  @ApiQuery(paginationQueryParams[0]) // page
+  @ApiQuery(paginationQueryParams[1]) // limit
+  @Get('search')
+  async search(@Query() searchDto: SearchDto): Promise<ISuccessResponse<UserSerializer[]>> {
+    const searchResults = await this.usersService.search(searchDto);
+    return createPaginatedResponse(
+      searchResults,
+      'Resultados de búsqueda recuperados exitosamente',
     );
   }
 

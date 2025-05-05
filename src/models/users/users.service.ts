@@ -11,7 +11,11 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { createNotFoundResponse } from 'src/common/helpers/responses/error.helper';
-import { IPaginatedResult, IPaginationOptions } from '../../common/interfaces/pagination.interface';
+import {
+  IPaginatedResult,
+  IPaginationOptions,
+} from '../../common/interfaces/pagination.interface';
+import { SearchDto } from '../../common/dto/search.dto';
 
 @Injectable()
 export class UsersService {
@@ -23,8 +27,22 @@ export class UsersService {
     return this.usersRepository.findAll();
   }
 
-  async findPaginated(options: IPaginationOptions): Promise<IPaginatedResult<UserSerializer>> {
+  async findPaginated(
+    options: IPaginationOptions,
+  ): Promise<IPaginatedResult<UserSerializer>> {
     return this.usersRepository.paginate(options, ['addresses']);
+  }
+
+  async search(
+    searchDto: SearchDto,
+  ): Promise<IPaginatedResult<UserSerializer>> {
+    const { q, ...paginationOptions } = searchDto;
+
+    if (!q || q.trim() === '') {
+      return this.findPaginated(paginationOptions);
+    }
+
+    return this.usersRepository.search(q, paginationOptions);
   }
 
   async findById(id: string): Promise<UserSerializer> {

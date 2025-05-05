@@ -3,7 +3,9 @@ import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.inte
 /**
  * Esquema Swagger para respuestas paginadas
  */
-export const paginatedResponseSchema = (itemSchemaRef: string): SchemaObject => ({
+export const paginatedResponseSchema = (
+  itemSchemaRef: string,
+): SchemaObject => ({
   oneOf: [
     {
       properties: {
@@ -71,4 +73,15 @@ export const paginationQueryParams = [
     description: 'Número de elementos por página (por defecto: 10)',
     example: 10,
   },
-]; 
+];
+
+/**
+ * Parámetro de búsqueda para Swagger
+ */
+export const searchQueryParam = {
+  name: 'q',
+  required: false,
+  type: String,
+  description: 'Término de búsqueda (buscará en campos relevantes)',
+  example: 'marco',
+};
